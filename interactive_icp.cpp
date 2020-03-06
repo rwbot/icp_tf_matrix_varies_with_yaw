@@ -38,19 +38,25 @@ int main(int argc,
   PointCloudT::Ptr cloud_icp(new PointCloudT); // ICP output point cloud
 
   // Checking program arguments
-  if (argc < 2)
+  if (argc < 7)
   {
-    printf("Usage :\n");
-    printf("\t\t%s file.ply number_of_ICP_iterations\n", argv[0]);
-    PCL_ERROR("Provide one ply file.\n");
+    printf("\nUsage :\n");
+    printf("\t%s file.ply number_of_ICP_iterations X_trans Y_trans Z_trans theta_rad \n", argv[0]);
+    PCL_ERROR("Provide one ply file, the number of iterations and the X, Y, Z, Theta for the transformation matrix\n");
     return (-1);
   }
 
   int iterations = 1; // Default number of ICP iterations
+  double x=0, y=0, z=0, theta=0;
   if (argc > 2)
   {
     // If the user passed the number of iteration as an argument
     iterations = atoi(argv[2]);
+    x = atof(argv[3]);
+    y = atof(argv[4]);
+    z = atof(argv[5]);
+    theta = atof(argv[6]);
+    printf("\nTHETA %f\n",theta);
     if (iterations < 1)
     {
       PCL_ERROR("Number of initial iterations must be >= 1\n");
@@ -72,14 +78,18 @@ int main(int argc,
   Eigen::Matrix4d transformation_matrix = Eigen::Matrix4d::Identity();
 
   // A rotation matrix (see https://en.wikipedia.org/wiki/Rotation_matrix)
-  double theta = M_PI / 8; // The angle of rotation in radians
+  // double theta = 0;//M_PI / 8; // The angle of rotation in radians
   transformation_matrix(0, 0) = std::cos(theta);
   transformation_matrix(0, 1) = -sin(theta);
   transformation_matrix(1, 0) = sin(theta);
   transformation_matrix(1, 1) = std::cos(theta);
 
-  // A translation on Z axis (0.4 meters)
-  transformation_matrix(2, 3) = 0.4;
+  // A translation on X axis (meters)
+  transformation_matrix(0, 3) = x;
+  // A translation on Y axis (meters)
+  transformation_matrix(1, 3) = y;
+  // A translation on Z axis (meters)
+  transformation_matrix(2, 3) = z;
 
   // Display in terminal the transformation matrix
   std::cout << "Applying this rigid transformation to: cloud_in -> cloud_icp" << std::endl;
